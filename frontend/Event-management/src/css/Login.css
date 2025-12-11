@@ -1,0 +1,16 @@
+/* Slide-in animation for title and description */
+@keyframes slideIn {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .animate-slide {
+    animation: slideIn 1s ease-in-out;
+  }
+  

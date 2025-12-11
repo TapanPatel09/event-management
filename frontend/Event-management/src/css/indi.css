@@ -1,0 +1,40 @@
+.p-tabview-title{
+    color: white;
+}
+.center-header .p-column-header-content {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+.p-tabview-nav,.p-tabview-nav-link{
+    background-color: #1a2331;
+    border: 1px solid;
+    border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
+}
+
+.p-tabview-panels{
+    background-color: #1a2331;
+    border: 1px solid;
+    border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
+}
+
+th[data-pc-section="headercell"] {
+    background-color: #1a2331; 
+    border: 1px solid ;
+    border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
+}
+td[data-pc-section="bodycell"] {
+    background-color: #1a2331; 
+}
+.p-column-title{
+    color: white;
+}
+.p-tabview-nav-link:hover{
+    background-color: #2d3c54;
+    transition: 0.1s ease-in;
+}
+.p-tabview-nav-link:active{
+ 
+    transition: 0.1s ease-in;
+    background-color: #1a2331;
+}

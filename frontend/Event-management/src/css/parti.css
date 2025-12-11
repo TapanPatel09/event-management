@@ -1,0 +1,204 @@
+/* Base table styling */
+.table-one {
+  width: 100%;
+  overflow-x: auto; /* Enable horizontal scrolling on small screens */
+}
+
+/* Main table styling with cleaner borders and consistent colors */
+.table-one th[data-pc-section="headercell"] {
+  background-color: #f8f9fa;
+  color: #212529;
+  font-weight: 600;
+  border: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.2s;
+  white-space: nowrap; /* Prevent header text wrapping */
+}
+
+.table-one th[data-pc-section="headercell"]:hover {
+  background-color: #e9ecef;
+}
+
+/* Table cell styling */
+.table-one td[data-pc-section="bodycell"] {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  padding: 0.65rem 1rem;
+  word-break: break-word; /* Allow text to break to prevent overflow */
+}
+
+/* Row hover effect */
+.table-one .p-datatable-tbody > tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* Column title styling */
+.table-one .p-column-title {
+  color: #212529;
+  font-weight: 600;
+}
+
+/* Center header alignment */
+.table-one .center-header .p-column-header-content {
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Checkbox styling */
+.table-one .p-checkbox-box {
+  border: 1.5px solid #6c757d;
+  border-radius: 4px;
+  transition: all 0.2s;
+  min-width: 18px; /* Ensure minimum clickable area */
+  min-height: 18px;
+}
+
+.table-one .p-checkbox-box.p-highlight {
+  background-color: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.table-one .p-checkbox-box:hover {
+  border-color: #5b21b6;
+}
+
+/* Tab view styling */
+.table-one .p-tabview-nav,
+.table-one .p-tabview-nav-link {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px 4px 0 0;
+}
+
+.table-one .p-tabview-panels {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  padding: 1.25rem;
+}
+
+.table-one .p-tabview-nav-link:hover {
+  background-color: #f1f5f9;
+  transition: background-color 0.2s ease-in;
+}
+
+.table-one .p-tabview-nav-link:active,
+.table-one .p-tabview-nav-link.p-highlight {
+  background-color: #7c3aed;
+  color: white;
+  border-color: #7c3aed;
+  transition: all 0.2s ease-in;
+}
+
+/* Status styling - for payment status */
+.table-one .status-paid {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  display: inline-block;
+  text-align: center;
+}
+
+.table-one .status-pending {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Action buttons styling */
+.table-one .p-button.p-button-icon-only {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.table-one .p-button.p-button-danger {
+  background-color: #f87171;
+  border-color: #f87171;
+}
+
+.table-one .p-button.p-button-danger:hover {
+  background-color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Search field styling */
+.table-one .p-inputtext {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+}
+
+.table-one .p-inputtext:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px #e9d5ff;
+}
+
+/* Responsive design */
+@media screen and (max-width: 991px) {
+  /* Stack the table cards on medium screens */
+  .table-one .p-datatable-tbody > tr > td .p-column-title {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Improve button spacing on smaller screens */
+  .table-one .p-button.p-button-icon-only {
+    margin: 0.25rem;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  /* Smaller padding on mobile */
+  .table-one th[data-pc-section="headercell"],
+  .table-one td[data-pc-section="bodycell"] {
+    padding: 0.5rem;
+  }
+  
+  /* Make sure headers don't get too squished */
+  .table-one .p-datatable-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  /* Stack filter and actions on mobile */
+  .table-one .p-datatable-header > div {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Make search input fill available width */
+  .table-one .p-inputtext {
+    width: 100%;
+  }
+  
+  /* Make status pills narrower on mobile */
+  .table-one .status-paid,
+  .table-one .status-pending {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* For very small mobile screens */
+@media screen and (max-width: 480px) {
+  /* Further adjustments for tiny screens */
+  .table-one .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+    padding: 0.35rem;
+  }
+  
+  /* Make sure even the smaller phones can see the content */
+  .table-one td[data-pc-section="bodycell"] {
+    min-width: 80px;
+  }
+}

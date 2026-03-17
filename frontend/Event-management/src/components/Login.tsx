@@ -188,7 +188,7 @@ const Login = () => {
               />
             </div>
             <div className="mb-6 flex justify-end">
-              <p onClick={()=>navigate("/forgetpassword")} className="font-medium text-sm text-blue-500 underline hover:cursor-pointer active:text-blue-700">Forget Password?</p>
+              <p onClick={() => navigate("/forgetpassword")} className="font-medium text-sm text-blue-500 underline hover:cursor-pointer active:text-blue-700">Forget Password?</p>
             </div>
             <button
               type="submit"
@@ -225,6 +225,17 @@ const Login = () => {
               className=" text-blue-500  hover:underline"
             >
               Login As Volunteer
+            </a>
+            <span className="text-gray-400 mx-2">|</span>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/volunteering");
+              }}
+              className=" text-blue-500  hover:underline"
+            >
+              Find Volunteering Opportunities
             </a>
           </center>
         </div>

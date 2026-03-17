@@ -1,11 +1,14 @@
 const nodemailer = require("nodemailer");
 
-const forgetpassword = async ( email,resetLink ) => {
+const forgetpassword = async (email, resetLink) => {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 
@@ -126,13 +129,17 @@ const forgetpassword = async ( email,resetLink ) => {
 </html>`,
   };
 
-  // Send email
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Error sending email:", error);
-    } else {
-      console.log("Email sent:", info.response);
-    }
+  // Return a promise for async/await support
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error sending email:", error);
+        reject(error);
+      } else {
+        console.log("Email sent:", info.response);
+        resolve(info);
+      }
+    });
   });
 };
 

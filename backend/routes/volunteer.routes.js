@@ -23,8 +23,10 @@ router.post("/register", async (req, res) => {
 
     let volunteerProfile = await Volunteer.findOne({ email });
 
+    let tempPassword = null;
     if (!volunteerProfile) {
       const defaultPassword = Math.random().toString(36).slice(-8);
+      tempPassword = defaultPassword;
       const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
       volunteerProfile = new Volunteer({
@@ -72,7 +74,10 @@ router.post("/register", async (req, res) => {
     res.status(201).json({
       message: "Volunteer registration successful",
       volunteer: volunteerProfile,
-      note: "You will receive your login credentials soon.",
+      tempPassword, // Return the password if it was newly generated
+      note: tempPassword
+        ? "Please share these credentials with the volunteer."
+        : "The volunteer is already registered; they can use their existing password.",
     });
   } catch (error) {
     console.error("Error in volunteer registration:", error);

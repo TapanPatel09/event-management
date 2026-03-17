@@ -7,6 +7,9 @@ const SendPassword = async (name, email, password, eventTitle) => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 
   let mailOptions = {
@@ -93,8 +96,8 @@ const SendPassword = async (name, email, password, eventTitle) => {
         <p>To view your assigned tasks and event details, please log in to our website using the credentials below:</p>
 
         <div class="login-details">
-          <p>Username :<strong> ${name}</strong></p>
-          <p>Password :<strong> ${password}</strong></p>
+          <p>Username: <strong>${name}</strong></p>
+          <p>Password: <strong>${password}</strong></p>
           <p><a href="https://easeevents-cb281.web.app/VolLogin" target="_blank">Click here to log in to Our Website</a></p>
         </div>
 
@@ -109,13 +112,17 @@ const SendPassword = async (name, email, password, eventTitle) => {
 </html>`,
   };
 
-  // Send email
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Error sending email:", error);
-    } else {
-      console.log("Email sent:", info.response);
-    }
+  // Return a promise for async/await support
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error sending email:", error);
+        reject(error);
+      } else {
+        console.log("Email sent:", info.response);
+        resolve(info);
+      }
+    });
   });
 };
 

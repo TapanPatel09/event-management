@@ -46,7 +46,20 @@ router.get("/verify", async function (req, res) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userSchema.findById(decoded.userID).select("-password");
+
+    // First try to find in User model
+    let user = await userSchema.findById(decoded.userID).select("-password");
+
+    // If not found, try to find in Volunteer model
+    if (!user) {
+      user = await Volunteer.findById(decoded.userID).select("-password");
+      if (user) {
+        // Add a flag to distinguish volunteer
+        const userObj = user.toObject();
+        userObj.role = 'volunteer';
+        return res.json({ user: userObj });
+      }
+    }
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -55,8 +68,9 @@ router.get("/verify", async function (req, res) {
     res.json({
       user: {
         _id: user._id,
-        username: user.username,
+        username: user.username || user.name,
         email: user.email,
+        role: 'organizer'
       },
     });
   } catch (error) {
@@ -70,14 +84,20 @@ router.post("/forgetpassword", async function (req, res) {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required." });
 
-    const user = await userSchema.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found." });
+    // Look for user in both collections
+    let user = await userSchema.findOne({ email });
+    if (!user) {
+      user = await Volunteer.findOne({ email });
+    }
+
+    if (!user) return res.status(404).json({ message: "Account with this email not found." });
 
     const resetToken = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "1h" });
 
-    const resetLink = `https://easeevents-cb281.web.app/resetpassword?token=${resetToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const resetLink = `${frontendUrl}/resetpassword?token=${resetToken}`;
     try {
-      await forgetpassword(email, resetLink); // Ensure this function handles errors
+      await forgetpassword(email, resetLink);
       return res.status(200).json({ message: "Reset link sent! Check your email." });
     } catch (error) {
       console.error("Error sending reset email:", error);
@@ -107,10 +127,14 @@ router.post("/resetpassword", async function (req, res) {
       return res.status(400).json({ message: "Invalid token" });
     }
 
-    // Proceed with password reset logic
-    const user = await userSchema.findById(decoded.id); // decoded.id instead of decoded.email
+    // Look for account in both collections
+    let user = await userSchema.findById(decoded.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      user = await Volunteer.findById(decoded.id);
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "Account not found" });
     }
 
     user.password = await bcrypt.hash(newPassword, 10); // Hash the new password
@@ -176,17 +200,33 @@ router.post("/Vollogin", async function (req, res) {
   try {
     const { username, password } = req.body;
 
-    const volunte = await Volunteer.findOne({ name: username });
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username/Email and Password are required" });
+    }
+
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+
+    const volunte = await Volunteer.findOne({
+      $or: [
+        { name: { $regex: new RegExp(`^${trimmedUsername}$`, "i") } },
+        { email: trimmedUsername.toLowerCase() }
+      ],
+    });
 
     if (!volunte) {
+      console.log(`Volunteer not found for: ${trimmedUsername}`);
       return res.status(404).json({ message: "Volunteer not found" });
     }
-    const ismatch = await bcrypt.compare(password, volunte.password);
+
+    const ismatch = await bcrypt.compare(trimmedPassword, volunte.password);
     if (!ismatch) {
+      console.log(`Password mismatch for volunteer: ${volunte.email || volunte.name}`);
       return res.status(400).json({
         message: "Username or password is incorrect",
       });
     }
+
     const token = jwt.sign(
       {
         userID: volunte._id,

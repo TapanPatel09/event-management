@@ -23,6 +23,7 @@ import VolLogin from "./components/VolLogin";
 import IndividualVolunteer from "./components/IndividualVolunteer";
 import Forget from "./components/Forget";
 import ResetPassword from "./components/ResetPassword";
+import VolunteeringLanding from "./components/VolunteeringLanding";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -71,10 +72,12 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/VolLogin" element={<VolLogin />} />
+        <Route path="/volunteering" element={<VolunteeringLanding />} />
+        <Route path="/volunteer" element={<VolunteeringLanding />} />
         <Route path="/VolDashBoard" element={<IndividualVolunteer />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/forgetpassword" element={<Forget />} />
-        <Route path="/resetpassword" element={<ResetPassword/>} />
+        <Route path="/resetpassword" element={<ResetPassword />} />
         <Route
           path="/participate/:eventId"
           element={<EventParticipationForm />}

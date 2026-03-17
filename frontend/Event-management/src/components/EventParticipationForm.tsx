@@ -12,6 +12,7 @@ import {
   useFetchEventByID,
 } from "../Queries/Allquery";
 import { InputText } from "primereact/inputtext";
+import { Dialog } from "primereact/dialog";
 
 dayjs.extend(duration);
 
@@ -36,12 +37,14 @@ const EventParticipationForm: React.FC = () => {
   const [usertype, setusertype] = useState("participant");
   const [role, setrole] = useState("");
   const [phone, setPhone] = useState("");
-  const amount = 500;
+  const amount = event?.ticketPrice || 0;
   const [isLoading, setIsLoading] = useState(false);
   const toast = useRef<Toast>(null);
   const [showAskPopup, setShowAskPopup] = useState(false);
-const [questionText, setQuestionText] = useState("");
-const [answerText] = useState(""); 
+  const [questionText, setQuestionText] = useState("");
+  const [answerText] = useState("");
+  const [showCredentials, setShowCredentials] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
   const [countdown, setCountdown] = useState<Countdown>({
     days: 0,
@@ -127,8 +130,19 @@ const [answerText] = useState("");
     setIsLoading(true);
     const volunteerdata = { name, email, phone, eventId, role };
     try {
-      await CreateVolunteer(volunteerdata);
-      showToast("success", "Success", "Successfully joined event as volunteer");
+      CreateVolunteer(volunteerdata, {
+        onSuccess: (data) => {
+          showToast("success", "Success", "Successfully joined event as volunteer");
+          if (data.tempPassword) {
+            setGeneratedPassword(data.tempPassword);
+            setShowCredentials(true);
+          }
+        },
+        onError: (error: any) => {
+          const errorMsg = error.response?.data?.message || error.message || "Failed to register as volunteer";
+          showToast("error", "Registration Failed", errorMsg);
+        }
+      });
     } catch (error: any) {
       const errorMsg = error.message || "Failed to register as volunteer";
       showToast("error", "Registration Failed", errorMsg);
@@ -199,7 +213,7 @@ const [answerText] = useState("");
         currency,
       } = orderResponse.data;
       const options = {
-        key: "rzp_test_3DBjtYNoUa8u7a",
+        key: "rzp_test_RqFYB9AtLvCsqW",
         amount: order_amount,
         currency,
         name: "Event Registration",
@@ -269,61 +283,61 @@ const [answerText] = useState("");
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       <Toast ref={toast} />
-{/* Ask Question Floating Button */}
-<div className="fixed bottom-6 right-6 z-50">
-  <button
-    onClick={() => setShowAskPopup(!showAskPopup)}
-    className="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700"
-  >
-    Ask
-  </button>
-</div>
+      {/* Ask Question Floating Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={() => setShowAskPopup(!showAskPopup)}
+          className="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700"
+        >
+          Ask
+        </button>
+      </div>
 
-{/* Popup Form */}
-{showAskPopup && (
-  <div className="fixed bottom-20 right-6 bg-white shadow-xl p-4 rounded-lg z-50 w-80">
-    <h3 className="text-lg font-semibold mb-2 text-gray-800">Ask a Question</h3>
-    <InputText
-      value={questionText}
-      onChange={(e) => setQuestionText(e.target.value)}
-      placeholder="Type your question here..."
-      className="w-full mb-2"
-    />
-    <div className="flex justify-end space-x-2">
-      <button
-        onClick={() => setShowAskPopup(false)}
-        className="text-gray-600 hover:text-gray-800 text-sm"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={async () => {
-          try {
-            if (!questionText.trim()) {
-              showToast("error", "Error", "Question cannot be empty.");
-              return;
-            }
-            const response = await axios.post(`${api}/event/sendquestion`, {
-              qu: questionText,
-              ans: answerText,
-              eventid: eventId,
-            });
-            showToast("success", "Success", response.data.message);
-            setQuestionText("");
-            setShowAskPopup(false);
-            refetch(); // Optional, if you want to refresh event data
-          } catch (error: any) {
-            console.error("Ask Question Error:", error);
-            showToast("error", "Failed", error.response?.data?.message || "Failed to submit question");
-          }
-        }}
-        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded"
-      >
-        Submit
-      </button>
-    </div>
-  </div>
-)}
+      {/* Popup Form */}
+      {showAskPopup && (
+        <div className="fixed bottom-20 right-6 bg-white shadow-xl p-4 rounded-lg z-50 w-80">
+          <h3 className="text-lg font-semibold mb-2 text-gray-800">Ask a Question</h3>
+          <InputText
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
+            placeholder="Type your question here..."
+            className="w-full mb-2"
+          />
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => setShowAskPopup(false)}
+              className="text-gray-600 hover:text-gray-800 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  if (!questionText.trim()) {
+                    showToast("error", "Error", "Question cannot be empty.");
+                    return;
+                  }
+                  const response = await axios.post(`${api}/event/sendquestion`, {
+                    qu: questionText,
+                    ans: answerText,
+                    eventid: eventId,
+                  });
+                  showToast("success", "Success", response.data.message);
+                  setQuestionText("");
+                  setShowAskPopup(false);
+                  refetch(); // Optional, if you want to refresh event data
+                } catch (error: any) {
+                  console.error("Ask Question Error:", error);
+                  showToast("error", "Failed", error.response?.data?.message || "Failed to submit question");
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         style={{
@@ -370,21 +384,19 @@ const [answerText] = useState("");
             <div className="flex gap-4 mt-2">
               <button
                 onClick={() => setusertype("participant")}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                  usertype === "participant"
-                    ? "bg-green-500 text-white shadow-md"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
+                className={`px-4 py-2 rounded-lg transition-all duration-200 ${usertype === "participant"
+                  ? "bg-green-500 text-white shadow-md"
+                  : "bg-gray-200 hover:bg-gray-300"
+                  }`}
               >
                 Participant
               </button>
               <button
                 onClick={() => setusertype("volunteer")}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                  usertype === "volunteer"
-                    ? "bg-green-500 text-white shadow-md"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
+                className={`px-4 py-2 rounded-lg transition-all duration-200 ${usertype === "volunteer"
+                  ? "bg-green-500 text-white shadow-md"
+                  : "bg-gray-200 hover:bg-gray-300"
+                  }`}
               >
                 Volunteer
               </button>
@@ -439,11 +451,10 @@ const [answerText] = useState("");
               <button
                 type="button"
                 onClick={addVolunteer}
-                className={`w-full py-2 text-white rounded-md transition-all duration-200 ${
-                  isLoading
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-800"
-                }`}
+                className={`w-full py-2 text-white rounded-md transition-all duration-200 ${isLoading
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-800"
+                  }`}
                 disabled={isLoading}
               >
                 {isLoading ? "Processing..." : "Register as Volunteer"}
@@ -454,11 +465,10 @@ const [answerText] = useState("");
                   <button
                     type="button"
                     onClick={handleFreeRegistration}
-                    className={`w-full py-2 text-white rounded-md transition-all duration-200 ${
-                      isLoading
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-800"
-                    }`}
+                    className={`w-full py-2 text-white rounded-md transition-all duration-200 ${isLoading
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-800"
+                      }`}
                     disabled={isLoading}
                   >
                     {isLoading ? "Processing..." : "Register"}
@@ -467,11 +477,10 @@ const [answerText] = useState("");
                   <button
                     type="button"
                     onClick={handlePayment}
-                    className={`w-full py-2 text-white rounded-md transition-all duration-200 ${
-                      isLoading
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-800"
-                    }`}
+                    className={`w-full py-2 text-white rounded-md transition-all duration-200 ${isLoading
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-800"
+                      }`}
                     disabled={isLoading}
                   >
                     {isLoading ? "Processing..." : `Pay ₹${amount} & Register`}
@@ -482,6 +491,57 @@ const [answerText] = useState("");
           </form>
         </div>
       </div>
+
+      <Dialog
+        header="Volunteer Registration Successful"
+        visible={showCredentials}
+        style={{ width: '450px' }}
+        onHide={() => setShowCredentials(false)}
+        className="rounded-2xl overflow-hidden"
+      >
+        <div className="flex flex-col items-center p-4">
+          <div className="bg-green-100 text-green-700 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+            <i className="pi pi-check-circle text-3xl"></i>
+          </div>
+
+          <p className="text-gray-600 text-center mb-6">
+            Registration complete! Please share these login details with the volunteer so they can access their dashboard.
+          </p>
+
+          <div className="w-full bg-gray-50 p-6 rounded-xl border border-gray-100 mb-6 font-mono">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-gray-500 text-sm uppercase">Username/Email</span>
+              <span className="font-bold text-gray-800">{email}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm uppercase">Password</span>
+              <span className="font-bold text-blue-600 text-lg tracking-wider">{generatedPassword}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-4 w-full">
+            <button
+              onClick={() => {
+                const message = `Hello ${name}! You have been registered as a volunteer for ${event.title}.\n\nLogin here: https://easeevents-cb281.web.app/VolLogin\nEmail: ${email}\nPassword: ${generatedPassword}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+              }}
+              className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl flex items-center justify-center transition-colors"
+            >
+              <i className="pi pi-whatsapp mr-2"></i> Share via WhatsApp
+            </button>
+            <button
+              onClick={() => {
+                const text = `Volunteer Details for ${event.title}:\nEmail: ${email}\nPassword: ${generatedPassword}`;
+                navigator.clipboard.writeText(text);
+                showToast("success", "Copied", "Credentials copied to clipboard");
+              }}
+              className="px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-colors"
+            >
+              <i className="pi pi-copy"></i>
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 };

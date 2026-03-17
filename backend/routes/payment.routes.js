@@ -40,21 +40,24 @@
         Math.random() * 10000
       )}`;
 
-      const options = {
-        amount: amount * 100,
-        currency: "INR",
-        receipt: `receipt_${Date.now()}`,
-      };
-      const order = await razorpay.orders.create(options);
-      if (event.ticketCategory == "free") {
+      let order = { id: null };
+      let paymentStatus = "pending";
+
+      if (event.ticketCategory === "free") {
         paymentStatus = "paid";
         if (event.ticketsAvailable > 0) {
           event.ticketsAvailable -= 1;
           await event.save();
         }
       } else {
-        paymentStatus = "pending";
+        const options = {
+          amount: (amount || event.ticketPrice || 0) * 100,
+          currency: "INR",
+          receipt: `receipt_${Date.now()}`,
+        };
+        order = await razorpay.orders.create(options);
       }
+
       const participant = await Participant.create({
         name,
         email,
@@ -66,11 +69,11 @@
       });
 
       event.participants.push(participant._id);
-
       await event.save();
 
       res.json(order);
     } catch (error) {
+      console.error("Error creating order:", error);
       res.status(500).json({ error: error.message });
     }
   });

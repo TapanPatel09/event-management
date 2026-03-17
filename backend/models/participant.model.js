@@ -59,7 +59,7 @@ ParticipantSchema.pre("save", async function (next) {
       this.name,
       event.title,
       this.ticketNumber,
-      this.qrCodePath,
+      this.qrCode,
       event.date,
       event.venue,
       event.startTime,

@@ -50,12 +50,8 @@ const sendTicketEmail = async (
     return `${formattedStart} - ${formattedEnd}`;
   };
 
-  const eventDate = formatDate(
-    "Mon Feb 17 2025 00:00:00 GMT+0530 (India Standard Time)"
-  );
-  const eventTime = formatTimeRange(
-    "2025-02-13T19:57:02.848Z - 2025-02-13T20:57:02.848Z"
-  );
+  const eventDate = formatDate(date);
+  const eventTime = `${startTime} - ${endTime}`;
 
   let mailOptions = {
     from: process.env.EMAIL_USER,
@@ -181,7 +177,7 @@ const sendTicketEmail = async (
           "
         >
           <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://example.com/event"
+            src="cid:qrCode"
             alt="QR Code"
             style="width: 150px; height: 150px; border-radius: 4px"
           />
@@ -275,23 +271,28 @@ const sendTicketEmail = async (
 
 `,
 
-   
+
     attachments: [
       {
         filename: "ticket_qr.png",
-        path: qrCodePath, 
+        path: qrCodePath,
         cid: "qrCode",
         contentType: "image/png",
       },
     ],
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Error sending email:", error);
-    } else {
-      console.log("Email sent:", info.response);
-    }
+  // Return a promise for async/await support
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error sending email:", error);
+        reject(error);
+      } else {
+        console.log("Email sent:", info.response);
+        resolve(info);
+      }
+    });
   });
 };
 

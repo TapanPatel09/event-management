@@ -4,6 +4,7 @@ const router = express.Router();
 const Event = require("../models/event.model");
 const { v2: cloudinary } = require("cloudinary");
 const multer = require("multer");
+const socket = require("../socket");
 
 cloudinary.config({
   cloud_name: 'ddtqri4py',
@@ -75,6 +76,15 @@ router.post("/create_event", upload.single('image'), async function (req, res) {
       ticketPrice: ticketCategory === "paid" ? ticketPrice : undefined,
       ticketsAvailable,
     });
+
+    try {
+      socket.getIO().emit("notification", {
+        message: `New Event Created: ${title}! Check it out now.`,
+        type: "success"
+      });
+    } catch(err) {
+      console.log("Socket emit failed", err)
+    }
 
     res.status(201).json({
       message: "Event created successfully",

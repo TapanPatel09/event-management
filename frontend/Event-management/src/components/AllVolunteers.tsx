@@ -12,6 +12,8 @@ import { Toast } from "primereact/toast";
 import axios from "axios"; // Assuming you're using axios for API calls
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
+// @ts-ignore
+import QrReader from "react-qr-scanner";
 import "../css/parti.css"
 
 // Updated interface to match the actual data structure
@@ -20,6 +22,7 @@ interface VolunteerEvent {
   role: string;
   _id: string;
   assignedTasks: string;
+  isPresent: boolean;
 }
 
 interface Volunteer {
@@ -32,6 +35,7 @@ interface Volunteer {
 
 const AllVolunteers = () => {
   const [visible, setVisible] = useState<boolean>(false);
+  const [scanVisible, setScanVisible] = useState<boolean>(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(
     null
   );
@@ -115,6 +119,48 @@ const AllVolunteers = () => {
     );
   }
 
+  const handleScan = async (data: any) => {
+    if (data) {
+      try {
+        const qrContent = JSON.parse(data.text);
+        if (qrContent.volunteerId && qrContent.eventId === eventId) {
+          const res = await axios.post(`${api}/volunteer/mark-attendance`, {
+            volunteerId: qrContent.volunteerId,
+            eventId: eventId,
+          });
+          if (res.status === 200) {
+            toast.current?.show({
+              severity: "success",
+              summary: "Attendance Marked",
+              detail: "Volunteer is marked as present.",
+              life: 3000,
+            });
+            refetch();
+            setScanVisible(false);
+          }
+        } else {
+          toast.current?.show({
+            severity: "warn",
+            summary: "Invalid QR",
+            detail: "This QR code does not belong to this event.",
+            life: 3000,
+          });
+        }
+      } catch (err) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Scan Failed",
+          detail: "Invalid QR code format.",
+          life: 3000,
+        });
+      }
+    }
+  };
+
+  const handleError = (err: any) => {
+    console.error(err);
+  };
+
   const actionBodyTemplate = (rowData: Volunteer) => {
     return (
       <div className="flex space-x-2">
@@ -176,6 +222,17 @@ const AllVolunteers = () => {
         placeholder="Add tasks"
         className="w-full p-2 border rounded"
       />
+    );
+  };
+
+  const attendanceBodyTemplate = (rowData: Volunteer) => {
+    const event =
+      rowData.events?.find((e) => e.event === eventId) || rowData.events[0];
+    
+    return event?.isPresent ? (
+      <span className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded border border-green-400">Present</span>
+    ) : (
+      <span className="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded border border-red-400">Absent</span>
     );
   };
 
@@ -326,6 +383,13 @@ const AllVolunteers = () => {
             right={() => (
               <div className="flex flex-wrap gap-2">
                 <button
+                  onClick={() => setScanVisible(true)}
+                  className="p-button-info text-white bg-blue-500 hover:bg-blue-700 active:bg-blue-400 px-3 py-2 rounded"
+                >
+                  <i className="pi pi-qrcode mr-2 text-white"></i>
+                  Scan QR
+                </button>
+                <button
                   onClick={exportCSV}
                   className="p-button-info text-white bg-purple-500 hover:bg-purple-700 active:bg-purple-400 px-3 py-2 rounded"
                 >
@@ -394,9 +458,31 @@ const AllVolunteers = () => {
               body={tasksBodyTemplate}
             />
 
+            <Column
+              field="events[0].isPresent"
+              header="Attendance"
+              body={attendanceBodyTemplate}
+            />
+
             <Column body={actionBodyTemplate} header="Actions" />
           </DataTable>
         </div>
+
+        <Dialog
+          header="Scan QR Code"
+          visible={scanVisible}
+          onHide={() => setScanVisible(false)}
+          style={{ width: "400px" }}
+        >
+          {scanVisible && (
+            <QrReader
+              delay={300}
+              onError={handleError}
+              onScan={handleScan}
+              style={{ width: "100%" }}
+            />
+          )}
+        </Dialog>
       </div>
     </EventLayout>
   );

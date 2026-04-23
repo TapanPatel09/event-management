@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const SendPassword = async (name, email, password, eventTitle) => {
+const SendPassword = async (name, email, password, eventTitle, qrCodeDataUrl) => {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -11,6 +11,17 @@ const SendPassword = async (name, email, password, eventTitle) => {
       rejectUnauthorized: false,
     },
   });
+
+  let qrSection = "";
+  if (qrCodeDataUrl) {
+    qrSection = `
+        <div style="text-align: center; margin-top: 20px;">
+          <h3>Your Attendance QR Code</h3>
+          <p>Please present this QR code at the venue for check-in.</p>
+          <img src="${qrCodeDataUrl}" alt="QR Code" style="max-width: 200px; border: 1px solid #ccc; padding: 10px; border-radius: 8px;" />
+        </div>
+    `;
+  }
 
   let mailOptions = {
     from: process.env.EMAIL_USER,
@@ -41,12 +52,6 @@ const SendPassword = async (name, email, password, eventTitle) => {
         border-radius: 12px;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(0, 0, 0, 0.1);
-        transform: perspective(1000px) rotateX(2deg) rotateY(2deg);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      .container:hover {
-        transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
       }
       .header {
         background: #023e8a;
@@ -101,7 +106,9 @@ const SendPassword = async (name, email, password, eventTitle) => {
           <p><a href="https://easeevents-cb281.web.app/VolLogin" target="_blank">Click here to log in to Our Website</a></p>
         </div>
 
-        <p>Your contribution is highly valued, and we appreciate your support in making this event a success!</p>
+        ${qrSection}
+
+        <p style="margin-top: 20px;">Your contribution is highly valued, and we appreciate your support in making this event a success!</p>
       </div>
       <div class="footer">
         <p>If you have any questions, contact us at <a href="mailto:easeevent100@gmail.com">easeevent100@gmail.com</a>.</p>

@@ -1,7 +1,9 @@
 // src/App.tsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { io } from "socket.io-client";
+import { Toast } from "primereact/toast";
 import not from "./assets/notfound.jpg";
 import { PrivateRouteWrapper } from "./components/PrivateRoute";
 import Login from "./components/Login";
@@ -27,6 +29,31 @@ import VolunteeringLanding from "./components/VolunteeringLanding";
 
 const App = () => {
   const dispatch = useDispatch();
+  const toastRef = useRef<Toast>(null);
+
+  useEffect(() => {
+    // Socket connection
+    const socket = io("http://localhost:8000", {
+      withCredentials: true,
+    });
+
+    socket.on("notification", (data: any) => {
+      // data: { message, organizerId, type }
+      // For simplified cross-platform feed, we'll just show it to everyone or filter if organizerId exists
+      // If organizerId exists, only show if currentUser ID matches, but we don't have user easily here without useSelector
+      // For MVP, broadcast to everyone if generic, or check localstorage
+      toastRef.current?.show({
+        severity: data.type || "info",
+        summary: "Notification",
+        detail: data.message,
+        life: 5000,
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -69,6 +96,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      <Toast ref={toastRef} position="top-right" />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/VolLogin" element={<VolLogin />} />

@@ -55,6 +55,10 @@ const VolunteerSchema = new Schema(
           type: String,
           default: "",
         },
+        isPresent: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     totalEventsParticipated: { type: Number, default: 0 },

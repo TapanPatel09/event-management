@@ -41,5 +41,11 @@ app.use("/volunteer", volunteerroutes);
 app.use("/anal", analyticsroutes);
 app.use("/ai", aicall);
 
+const http = require("http");
+const socket = require("./socket");
+
+const server = http.createServer(app);
+socket.init(server);
+
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

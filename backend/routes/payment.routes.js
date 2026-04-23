@@ -2,6 +2,7 @@
   const Razorpay = require("razorpay");
   const crypto = require("crypto");
   const Event = require("../models/event.model");
+  const socket = require("../socket");
 
   const Participant = require("../models/participant.model");
   require("dotenv").config();
@@ -113,6 +114,16 @@
           if (event.ticketsAvailable > 0) {
             event.ticketsAvailable -= 1;
             await event.save();
+          }
+
+          try {
+            socket.getIO().emit("notification", {
+              message: `A new ticket was purchased for ${event.title}!`,
+              organizerId: event.createdBy,
+              type: "info"
+            });
+          } catch(err) {
+            console.log("Socket emit failed", err)
           }
         }
 

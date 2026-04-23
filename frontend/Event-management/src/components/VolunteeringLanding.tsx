@@ -32,7 +32,7 @@ const VolunteeringLanding: React.FC = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {events?.map((event: any) => (
+                        {events?.filter((e: any) => new Date(e.date).getTime() >= new Date().setHours(0,0,0,0)).map((event: any) => (
                             <div key={event._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
                                 <div className="relative h-56 overflow-hidden">
                                     <img

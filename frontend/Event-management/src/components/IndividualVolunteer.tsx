@@ -338,7 +338,7 @@ const IndividualVolunteer = () => {
 
               <TabPanel header="Events">
                 <Card className="p-6 bg-gray-700 bg-opacity-50 border border-gray-600 hover:border-gray-500 transition-all duration-300">
-                  <EventCard events={storedUser.events} />
+                  <EventCard events={storedUser.events} volunteerId={storedUser._id} />
                 </Card>
               </TabPanel>
 

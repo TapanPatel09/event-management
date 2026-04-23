@@ -3,6 +3,7 @@ const Volunteer = require("../models/volunteer.model");
 const Event = require("../models/event.model");
 const SendPassword = require("../config/SendPassword");
 const bcrypt = require("bcrypt");
+const QRCode = require("qrcode");
 
 const router = express.Router();
 
@@ -45,7 +46,11 @@ router.post("/register", async (req, res) => {
           },
         ],
       });
-      await SendPassword(name, email, defaultPassword, eventExists.title);
+
+      const qrData = JSON.stringify({ volunteerId: volunteerProfile._id, eventId });
+      const qrCodeDataUrl = await QRCode.toDataURL(qrData);
+
+      await SendPassword(name, email, defaultPassword, eventExists.title, qrCodeDataUrl);
     } else {
       const isAlreadyRegistered = volunteerProfile.events.some(
         (ev) => ev.event.toString() === eventId
@@ -199,6 +204,34 @@ router.delete("/delete/:volunteerId/:eventId", async (req, res) => {
   } catch (error) {
     console.error("Error deleting volunteer:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/mark-attendance", async (req, res) => {
+  try {
+    const { volunteerId, eventId } = req.body;
+    if (!volunteerId || !eventId) {
+      return res.status(400).json({ message: "Missing volunteerId or eventId" });
+    }
+
+    const volunteer = await Volunteer.findById(volunteerId);
+    if (!volunteer) return res.status(404).json({ message: "Volunteer not found" });
+
+    const eventIndex = volunteer.events.findIndex(
+      (ev) => ev.event.toString() === eventId
+    );
+
+    if (eventIndex === -1) {
+      return res.status(404).json({ message: "Volunteer is not registered for this event" });
+    }
+
+    volunteer.events[eventIndex].isPresent = true;
+    await volunteer.save();
+
+    res.status(200).json({ message: "Attendance marked successfully!" });
+  } catch (error) {
+    console.error("Error marking attendance:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

@@ -2,8 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Dialog } from "primereact/dialog";
-// @ts-ignore
-import QrReader from "react-qr-scanner";
+import QRCode from "react-qr-code";
 
 interface EventInput {
   _id: string;
@@ -17,28 +16,11 @@ interface EventInput {
 
 interface EventCardProps {
   events: EventInput[] | undefined;
+  volunteerId: string;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ events }) => {
-  const [scannedData, setScannedData] = useState<string | null>(null);
+const EventCard: React.FC<EventCardProps> = ({ events, volunteerId }) => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
-
-  interface ScanData {
-    text: string;
-  }
-
-  const handleScan = (data: ScanData | null) => {
-    if (data) {
-      setScannedData(data.text);
-      setTimeout(() => {
-        setScannedData(null);
-      }, 2000);
-    }
-  };
-
-  const handleError = (err: any) => {
-    console.error("QR Scanner Error:", err);
-  };
 
   if (!events || events.length === 0) {
     return (
@@ -114,29 +96,21 @@ const formatEventDate = (dateString: string): string => {
             </button>
 
             <Dialog
-              header="QR Code Scanner"
+              header="Your Attendance QR Code"
               visible={activeEventId === `${event._id}-qr`}
               onHide={() => setActiveEventId(null)}
               style={{ width: "40vw" }}
             >
-              <div className="flex justify-center items-center">
-                <div className="w-full h-40 bg-gray-200 rounded-lg overflow-hidden">
-                  <QrReader
-                    delay={300}
-                    onError={handleError}
-                    onScan={handleScan}
-                    className="w-full h-full"
-                    constraints={{
-                      video: { facingMode: "environment" },
-                    }}
-                  />
-                </div>
+              <div className="flex justify-center items-center p-6 bg-white rounded-lg">
+                <QRCode
+                  value={JSON.stringify({
+                    volunteerId: volunteerId,
+                    eventId: event.event,
+                  })}
+                  size={256}
+                />
               </div>
-              {scannedData && (
-                <p className="mt-2 text-sm text-green-600 font-medium text-center">
-                  Scanned Code: {scannedData}
-                </p>
-              )}
+              <p className="text-center mt-4 text-gray-700">Present this QR code to the event Admin to mark your attendance!</p>
             </Dialog>
           </div>
         </div>

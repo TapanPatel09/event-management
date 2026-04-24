@@ -26,6 +26,10 @@ app.use(
   })
 );
 
+
+
+
+
 app.use(express.static("public"));
 app.use(cookieparser());
 app.use(express.urlencoded({ extended: true }));
@@ -48,4 +52,4 @@ const server = http.createServer(app);
 socket.init(server);
 
 const PORT = process.env.PORT || 8000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT} use it`));
